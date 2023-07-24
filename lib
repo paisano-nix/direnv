@@ -45,9 +45,6 @@ export DIRENV_LOG_FORMAT=$'\E[mdirenv: \E[38;5;8m%s\E[m'
 	)
 	nix_build=("${nix[@]}" "build" "${nix_eval_args[@]}" "${nix_build_args[@]}")
 
-	system="$("${nix_eval[@]}" 2>/dev/null --raw --impure --expr builtins.currentSystem)"
-	cellsFrom="$("${nix_eval[@]}" 2>/dev/null --raw "$registry.cellsFrom")"
-
 	# Usage: use env <target>
 	#
 	# Loads the environment determined by the given target
@@ -61,6 +58,8 @@ export DIRENV_LOG_FORMAT=$'\E[mdirenv: \E[38;5;8m%s\E[m'
 
 		local profile_path="${PRJ_DATA_HOME}/$cell/$block/$target"
 		mkdir -p "${PRJ_DATA_HOME}/$cell/$block/$target"
+
+		local system="$("${nix_eval[@]}" 2>/dev/null --raw --impure --expr builtins.currentSystem)"
 
 		cmd=(
 			"${nix_build[@]}"
@@ -85,7 +84,8 @@ export DIRENV_LOG_FORMAT=$'\E[mdirenv: \E[38;5;8m%s\E[m'
 	}
 
 	_set_watchers() {
-		local input="$1"
+		local cellsFrom="$1"
+		local input="$2"
 		read -r cell block target <<<"${input//\// }"
 		local BLOCK_PATH="$cellsFrom/$cell/$block"
 		local watchableFile=
@@ -115,8 +115,10 @@ export DIRENV_LOG_FORMAT=$'\E[mdirenv: \E[38;5;8m%s\E[m'
 	}
 
 	use_envreload() {
+		local cellsFrom="$("${nix_eval[@]}" 2>/dev/null --raw "$registry.cellsFrom")"
+
 		for target in "${@}"; do
-			_set_watchers "$target"
+			_set_watchers "$cellsFrom" "$target"
 		done
 		use_env "$1"
 	}
