@@ -28,7 +28,7 @@ export DIRENV_LOG_FORMAT=$'\E[mdirenv: \E[38;5;8m%s\E[m'
 
 { # Paisano Block
 
-	registry="git+file://$PRJ_ROOT#__std"
+	registry="git+${registry:-"file://$PRJ_ROOT#__std"}"
 	nix=("nix")
 	nix_eval_args=(
 		"--no-update-lock-file"
